@@ -17,6 +17,12 @@ X_train, y_train = shuffle_data(data)
 n_input   = data.train.images.shape[1]  # here MNIST data input (28,28)
 n_classes = data.train.labels.shape[1]  # here MNIST (0-9 digits)
 
+X_test = data.test.images
+y_test = data.test.labels
+
+X_validation = data.validation.images
+y_validation = data.validation.labels
+
 X_train_multi = []
 y_train_multi = []
 minibatch = 1024
@@ -27,13 +33,14 @@ m = 10
 S = np.array([[]])
 Y = np.array([[]])
 gamma = 0.2
-# GLOBAL VARIABLES - MATRICES
-P_ll = [] # P_parallel 
-g_ll = []	# g_Parallel
-g_NL_norm = 0
-Lambda_1 = []
 
-g = []
+# GLOBAL VARIABLES - MATRICES
+P_ll = np.array([[]]) # P_parallel 
+g_ll = np.array([[]]) # g_Parallel
+g_NL_norm = 0
+Lambda_1 = np.array([[]])
+
+g = np.array([])
 ###############################################################################
 ######################## LeNet-5 Network Architecture #########################
 ###############################################################################
@@ -105,14 +112,15 @@ for key, value in n_W.items():
 ###############################################################################
 ######################## f(x;w) ###############################################
 ###############################################################################
-x = tf.placeholder("float", [None, n_input])
-y = tf.placeholder("float", [None, n_classes])
+x = tf.placeholder(tf.float32, [None, n_input])
+y = tf.placeholder(tf.float32, [None, n_classes])
 
 w_initializer = tf.contrib.layers.xavier_initializer()
 
 w_tf = {}
 for key, _ in dim_w.items():
-	w_tf[key] = tf.get_variable(key, shape=dim_w[key], initializer=w_initializer)
+	w_tf[key] = tf.get_variable(key, shape=dim_w[key], 
+											initializer=w_initializer)
 
 def lenet5_model(x,_w):
 	# Reshape input to a 4D tensor 
@@ -232,12 +240,12 @@ def solve_newton_equation_to_find_sigma(delta):
 	# tolerance
 	tol = 1E-4
 	sigma = max( 0, -Lambda_1[1] )
-	if phi_bar_func( sigma,delta,Lambda_1,g_ll,g_NL_norm ) < 0:
+	if phi_bar_func( sigma,delta ) < 0:
 		sigma_hat = max( abs( g_ll ) / delta - Lambda_1 )
 		sigma = max( 0, sigma_hat)
-		while( abs( phi_bar_func(sigma,delta,Lambda_1,g_ll,g_NL_norm) ) > tol ):
-			phi_bar = phi_bar_func(sigma,delta,Lambda_1,g_ll,g_NL_norm)
-			phi_bar_prime = phi_bar_prime_func(sigma,Lambda_1,g_ll,g_NL_norm)
+		while( abs( phi_bar_func(sigma,delta) ) > tol ):
+			phi_bar = phi_bar_func(sigma,delta)
+			phi_bar_prime = phi_bar_prime_func(sigma)
 			sigma = sigma - phi_bar / phi_bar_prime
 		sigma_star = sigma
 	elif Lambda_1[1] < 0:
@@ -274,12 +282,18 @@ def lbfgs_trust_region_subproblem_solver(delta, g):
 	Lambda_hat = eigen_values_sorted
 	V = eigen_vectors_sorted
 
+	global P_ll
+	global g_ll
+	global g_NL_norm
+	global Lambda_1
+
 	Lambda_1 = gamma + Lambda_hat
 	#Lambda_2 = gamma * np.ones( n-len(Lambda_hat) )
 	#B_diag = np.concatenate( (Lambda_1, Lambda_2),axis=0 )
 
+
 	P_ll = Psi @ inv(R) @ V # P_parallel 
-	g_ll = P_ll @ g	# g_Parallel
+	g_ll = P_ll.T @ g	# g_Parallel
 	g_NL_norm = sqrt ( norm(g) ** 2 - norm(g_ll) ** 2 )
 
 	sigma = 0
@@ -304,7 +318,7 @@ def eval_reduction_ratio(sess,g,p):
 	ared = current_f - new_f
 
 	if S.size is not 0:
-		p_ll = P_ll @ p
+		p_ll = P_ll.T @ p
 		p_NL_norm = sqrt ( norm(p) ** 2 - norm(p_ll) ** 2 )
 		p_T_B_p = sum( Lambda_1 * p_ll ** 2)  + gamma * p_NL_norm ** 2
 	else:
@@ -323,29 +337,37 @@ def eval_y(sess):
 	return new_y
 
 def enqueue(Z,new_val):
-	if len(Z) == 0:
-		Z = new_val
+	if Z.size == 0:
+		Z = new_val.reshape(-1,1)
 		return Z
-	Z = np.concatenate( (Z,new_val), axis=1)
+	Z = np.concatenate( (Z,new_val.reshape(-1,1)), axis=1)
 	return Z
 		
 def dequeue(Z):
 	return np.delete(Z, obj=0, axis=1)
 
 def update_S_Y(new_s_val,new_y_val):
-	num_columns_S = S.shape[1]
-	num_columns_Y = Y.shape[1]
+	global S
+	global Y
+
+	Stmp = S
+	Ytmp = Y
+
+	num_columns_S = Stmp.shape[1]
+	num_columns_Y = Stmp.shape[1]
 	assert num_columns_S is num_columns_Y, "dimention of S and Y doesn't match"
 	if num_columns_S < m:
-		S = enqueue(S,new_s_val)
-		Y = enqueue(Y,new_y_val)
-		return
+		Stmp = enqueue(Stmp,new_s_val)
+		Ytmp = enqueue(Ytmp,new_y_val)
 	else:
-		S = dequeue(S)
-		S = enqueue(S,new_s_val)
-		Y = dequeue(Y)
-		Y = enqueue(Y,new_y_val)
-		return 
+		Stmp = dequeue(Stmp)
+		Stmp = enqueue(Stmp,new_s_val)
+		Ytmp = dequeue(Ytmp)
+		Ytmp = enqueue(Ytmp,new_y_val)
+
+	S = Stmp
+	Y = Ytmp
+	return 
 
 
 def dict_of_weight_matrices_to_single_linear_vec(x_dict):
@@ -353,7 +375,6 @@ def dict_of_weight_matrices_to_single_linear_vec(x_dict):
 	for key in sorted(w_tf.keys()):
 		matrix = x_dict[key]
 		x_vec = np.append(x_vec,matrix.flatten())	
-	#x_vec = x_vec.reshape(-1 , 1)
 	return x_vec
 
 def linear_vec_to_dict_of_weight_matrices(x_vec):
@@ -368,7 +389,8 @@ def linear_vec_to_dict_of_weight_matrices(x_vec):
 		id_start = id_end
 	return x_dict
 
-def compute_multibatch_tensor(sess,tensor_tf,feed_dict,X_train,y_train):
+def compute_multibatch_tensor(sess,tensor_tf,X_train,y_train):
+	feed_dict = {}
 	total = 0
 	num_minibatches_here = X_train.shape[0] // minibatch
 	for j in range(num_minibatches_here):
@@ -387,16 +409,17 @@ def compute_multibatch_tensor(sess,tensor_tf,feed_dict,X_train,y_train):
 	total = total * 1 / num_minibatches_here	
 	return total
 
-def compute_multibatch_gradient(sess,grad_tf,feed_dict,X_train,y_train):
+def compute_multibatch_gradient(sess,grad_tf,train_set,labels):
+	feed_dict = {}
 	gw = {}
-	num_minibatches_here = X_train.shape[0] // minibatch
+	num_minibatches_here = train_set.shape[0] // minibatch
 	for j in range(num_minibatches_here):
 		index_minibatch = j % num_minibatches_here
 		# mini batch 
 		start_index = index_minibatch     * minibatch
 		end_index   = (index_minibatch+1) * minibatch
-		X_batch = X_train[start_index:end_index]
-		y_batch = y_train[start_index:end_index]
+		X_batch = train_set[start_index:end_index]
+		y_batch = labels[start_index:end_index]
 		feed_dict.update({	x: X_batch,
 							y: y_batch})
 
@@ -415,17 +438,26 @@ def compute_multibatch_gradient(sess,grad_tf,feed_dict,X_train,y_train):
 def eval_gradient_vec(sess):
 	"""returns gradient, here only for mode='robust-multi-batch' 
 	I should modify to consider all other cases"""
-	feed_dict = {}
-	g_dict = compute_multibatch_gradient(sess,grad_w_tf,feed_dict,
+	g_dict = compute_multibatch_gradient(sess,grad_w_tf,
 												X_train_multi,y_train_multi)
 	g_vec = dict_of_weight_matrices_to_single_linear_vec(g_dict)
 	return g_vec	
 
-def eval_accuracy(sess,k,mode='robust-multi-batch'):
-	feed_dict = {}
-	accuracy_val = compute_multibatch_tensor(sess,accuracy,feed_dict,
+def eval_accuracy(sess):
+	accuracy_val = compute_multibatch_tensor(sess,accuracy,
 												X_train_multi,y_train_multi)
 	return accuracy_val
+
+def eval_accuracy_test(sess):
+	accuracy_val = compute_multibatch_tensor(sess,accuracy, X_test, y_test)
+	return accuracy_val
+
+
+def eval_accuracy_validation(sess):
+	accuracy_val = compute_multibatch_tensor(sess,accuracy, 
+													X_validation,y_validation)
+	return accuracy_val
+
 
 def eval_w_dict(sess):
 	w_dict = sess.run(w_tf)
@@ -447,20 +479,24 @@ def eval_aux_loss(sess,p_vec):
 	for key,_ in w_tf.items():
 		feed_dict.update({aux_w_placeholder[key]: w_dict[key]+p_dict[key] })
 	sess.run(aux_w_init,feed_dict=feed_dict)
-	feed_dict = {}
-	loss_new = compute_multibatch_tensor(sess,aux_loss,feed_dict,
+	loss_new = compute_multibatch_tensor(sess,aux_loss,
 											X_train_multi,y_train_multi)
 	return loss_new
 
 def eval_loss(sess):
-	feed_dict = {}
-	loss_val = compute_multibatch_tensor(sess,loss,feed_dict,
-											X_train_multi,y_train_multi)
+	loss_val = compute_multibatch_tensor(sess,loss,X_train_multi,y_train_multi)
+	return loss_val
+
+def eval_loss_test(sess):
+	loss_val = compute_multibatch_tensor(sess,loss,X_test,y_test)
+	return loss_val
+
+def eval_loss_validation(sess):
+	loss_val = compute_multibatch_tensor(sess,loss,X_validation,y_validation)
 	return loss_val
 
 def eval_aux_gradient_vec(sess):
-	feed_dict = {}
-	aux_g_dict = compute_multibatch_gradient(sess,aux_grad_w,feed_dict,
+	aux_g_dict = compute_multibatch_gradient(sess,aux_grad_w,
 												X_train_multi,y_train_multi)
 	aux_g_vec = dict_of_weight_matrices_to_single_linear_vec(aux_g_dict)
 	return aux_g_vec	
@@ -470,7 +506,7 @@ def eval_aux_gradient_vec(sess):
 ###############################################################################
 
 #--------- LOOP PARAMS ------------
-delta_hat = 20 # upper bound for trust region radius
+delta_hat = 3 # upper bound for trust region radius
 max_num_iter = 20 # max bunmber of trust region iterations
 delta = np.zeros(max_num_iter+1)
 delta[0] = delta_hat * 0.75
@@ -480,15 +516,22 @@ new_iteration = True
 flip_batch = 0
 with tf.Session() as sess:
 	sess.run(init)
+	loss_val = eval_loss(sess)
+	accuracy_val = eval_accuracy(sess)
+	test_val = eval_loss_validation(sess)
+	print('initial loss is ' + str(loss_val))
+	print('initial validation loss is ' + str(test_val))
+	print('initial accuracy is ' + str(accuracy_val))
+
 
 	#-------- main loop ----------
 	for k in range(max_num_iter):
 		
 		# batching -- take this to a function
 		if new_iteration:
-			flip_batch = flip_batch + 1
-			start_index = (flip_batch%2)   * X_train.shape[0] // 3
-			end_index = (flip_batch%2 + 2) * X_train.shape[0] // 3
+			flip_batch = int(flip_batch + 1)
+			start_index = int(flip_batch%2)   * X_train.shape[0] // 3
+			end_index = int(flip_batch%2 + 2) * X_train.shape[0] // 3
 			X_train_multi = X_train[start_index:end_index]
 			y_train_multi = y_train[start_index:end_index]
 
@@ -503,19 +546,25 @@ with tf.Session() as sess:
 		if rho[k] < 1/4:
 			delta[k+1] = 1/4 * delta[k]
 		else:
-			if rho[k] > 3/4 and isclose( norm2(p), delta[k] ):
+			if rho[k] > 3/4 and isclose( norm(p), delta[k] ):
 				delta[k+1] = min(2*delta[k], delta_hat)
 			else:
 				delta[k+1] = delta[k]
 
 		if rho[k] > eta:
+			loss_val = eval_loss(sess)
+			accuracy_val = eval_accuracy(sess)
+			test_val = eval_loss_validation(sess)
+			print('loss is ' + str(loss_val))
+			print('validation loss is ' + str(test_val))
+			print('accuracy is ' + str(accuracy_val))
 			update_weights(sess,p)
-			y = eval_y(sess)
-			s = p
-			update_S_Y(s,y)
-			gamma = (y.T @ y) / (s.T @ y)
-			new_iteration = True
-			print('weight is update')
+			print('weight is updated')
+			new_y = eval_y(sess)
+			new_s = p
+			update_S_Y(new_s,new_y)
+			gamma = (new_y.T @ new_y) / (new_s.T @ new_y)
+			new_iteration = True			
 		else:
 			new_iteration = False
 			continue
