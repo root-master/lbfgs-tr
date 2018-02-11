@@ -390,17 +390,17 @@ def linear_vec_to_dict_of_weight_matrices(x_vec):
 		id_start = id_end
 	return x_dict
 
-def compute_multibatch_tensor(sess,tensor_tf,X_train,y_train):
+def compute_multibatch_tensor(sess,tensor_tf,X__,y__):
 	feed_dict = {}
 	total = 0
-	num_minibatches_here = X_train.shape[0] // minibatch
+	num_minibatches_here = X__.shape[0] // minibatch
 	for j in range(num_minibatches_here):
 		index_minibatch = j % num_minibatches_here
 		# mini batch 
 		start_index = index_minibatch     * minibatch
 		end_index   = (index_minibatch+1) * minibatch
-		X_batch = X_train[start_index:end_index]
-		y_batch = y_train[start_index:end_index]
+		X_batch = X__[start_index:end_index]
+		y_batch = y__[start_index:end_index]
 		feed_dict.update({	x: X_batch,
 							y: y_batch})
 
@@ -530,10 +530,26 @@ def save_print_training_results(sess):
 	accuracy_validation_results.append(accuracy_validation)
 	accuracy_test_results.append(accuracy_test)
 
-	print('LOSS     - train: {0:.4f}, validation: {0:.4f}, test: {0:.4f}' \
+	print('LOSS     - train: {0:.4f}, validation: {1:.4f}, test: {2:.4f}' \
 						.format(loss_train, loss_validation, loss_test))
-	print('ACCURACY - train: {0:.4f}, validation: {0:.4f}, test: {0:.4f}' \
+	print('ACCURACY - train: {0:.4f}, validation: {1:.4f}, test: {2:.4f}' \
 			.format(accuracy_train, accuracy_validation, accuracy_test))
+
+def set_multi_batch(num_batch_in_data, iteration):
+	global X_train_multi
+	global y_train_multi
+	start_index = iteration % (num_batch_in_data-1) * \
+									X_train.shape[0] // num_batch_in_data
+
+	end_index = ( iteration % (num_batch_in_data-1) + 2) * \
+									X_train.shape[0] // num_batch_in_data
+
+	X_train_multi = X_train[start_index:end_index]
+	y_train_multi = y_train[start_index:end_index]
+	return
+
+
+
 
 #--------- LOOP PARAMS ------------
 delta_hat = 3 # upper bound for trust region radius
@@ -546,7 +562,7 @@ eta = 1/4 * 0.9 # eta \in [0,1/4)
 
 new_iteration = True
 new_iteration_number = 0
-flip_batch = 0
+num_batch_in_data = 5
 
 tolerance = 1E-5
 
@@ -556,14 +572,8 @@ with tf.Session() as sess:
 	#-------- main loop ----------
 	for k in tqdm( range(max_num_iter) ):
 		
-		# batching -- take this to a function
 		if new_iteration:
-			flip_batch = int(flip_batch + 1)
-			start_index = int(flip_batch%2)   * X_train.shape[0] // 3
-			end_index = int(flip_batch%2 + 2) * X_train.shape[0] // 3
-			X_train_multi = X_train[start_index:end_index]
-			y_train_multi = y_train[start_index:end_index]
-
+			set_multi_batch(num_batch_in_data, new_iteration_number)
 			print('-'*60)
 			print('iteration: {}' .format(k))
 			new_iteration_number += 1
@@ -604,11 +614,11 @@ with tf.Session() as sess:
 			new_iteration = False
 			print('-'*30)
 			print('No update in iteration: {}' .format(k))
-			continue
 
 end = time.time()
 
 loop_time = end - start
+active_iterations_time = loop_time / (new_iteration_number)
 each_iteration_avg_time = loop_time / (k+1)
 
 
