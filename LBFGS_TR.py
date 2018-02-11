@@ -2,7 +2,8 @@ import numpy as np
 from numpy.linalg import inv, qr, eig, norm
 import math
 from math import isclose, sqrt
-
+from tqdm import tqdm
+import time
 import tensorflow as tf
 tf.reset_default_graph()
 
@@ -240,7 +241,7 @@ def solve_newton_equation_to_find_sigma(delta):
 	# tolerance
 	tol = 1E-4
 	sigma = max( 0, -Lambda_1[1] )
-	if phi_bar_func( sigma,delta ) < 0:
+	if phi_bar_func(sigma,delta) < 0:
 		sigma_hat = max( abs( g_ll ) / delta - Lambda_1 )
 		sigma = max( 0, sigma_hat)
 		while( abs( phi_bar_func(sigma,delta) ) > tol ):
@@ -505,27 +506,55 @@ def eval_aux_gradient_vec(sess):
 ######################## TRUST REGION ALGORITHM ###############################
 ###############################################################################
 
+
+# save training results
+loss_train_results = []
+loss_validation_results = []
+loss_test_results = []
+accuracy_train_results = []
+accuracy_validation_results = []
+accuracy_test_results = []
+def save_print_training_results(sess):
+	loss_train = eval_loss(sess)
+	accuracy_train = eval_accuracy(sess)
+	loss_validation = eval_loss_validation(sess)
+	accuracy_validation = eval_accuracy_validation(sess)
+	loss_test = eval_loss_test(sess)
+	accuracy_test = eval_accuracy_test(sess)
+
+	# saving training results
+	loss_train_results.append(loss_train)
+	loss_validation_results.append(accuracy_train)
+	loss_test_results.append(loss_test)
+	accuracy_train_results.append(accuracy_train)
+	accuracy_validation_results.append(accuracy_validation)
+	accuracy_test_results.append(accuracy_test)
+
+	print('LOSS     - train: {0:.4f}, validation: {0:.4f}, test: {0:.4f}' \
+						.format(loss_train, loss_validation, loss_test))
+	print('ACCURACY - train: {0:.4f}, validation: {0:.4f}, test: {0:.4f}' \
+			.format(accuracy_train, accuracy_validation, accuracy_test))
+
 #--------- LOOP PARAMS ------------
 delta_hat = 3 # upper bound for trust region radius
-max_num_iter = 20 # max bunmber of trust region iterations
+max_num_iter = 10000 # max bunmber of trust region iterations
 delta = np.zeros(max_num_iter+1)
 delta[0] = delta_hat * 0.75
 rho = np.zeros(max_num_iter) # true reduction / predicted reduction ratio
 eta = 1/4 * 0.9 # eta \in [0,1/4)
+
+
 new_iteration = True
+new_iteration_number = 0
 flip_batch = 0
+
+tolerance = 1E-5
+
 with tf.Session() as sess:
+	start = time.time()
 	sess.run(init)
-	loss_val = eval_loss(sess)
-	accuracy_val = eval_accuracy(sess)
-	test_val = eval_loss_validation(sess)
-	print('initial loss is ' + str(loss_val))
-	print('initial validation loss is ' + str(test_val))
-	print('initial accuracy is ' + str(accuracy_val))
-
-
 	#-------- main loop ----------
-	for k in range(max_num_iter):
+	for k in tqdm( range(max_num_iter) ):
 		
 		# batching -- take this to a function
 		if new_iteration:
@@ -535,7 +564,19 @@ with tf.Session() as sess:
 			X_train_multi = X_train[start_index:end_index]
 			y_train_multi = y_train[start_index:end_index]
 
-		g = eval_gradient_vec(sess)		
+			print('-'*60)
+			print('iteration: {}' .format(k))
+			new_iteration_number += 1
+			save_print_training_results(sess)
+
+		g = eval_gradient_vec(sess)	
+
+		if norm(g) < tolerance:
+			print('-'*60)
+			print('gradient vanished')
+			print('maybe convergence -- breaking the trust region loop!')
+			print('-'*60)
+			break	
 		
 		if S.size == 0:
 			p = -gamma * g
@@ -552,12 +593,6 @@ with tf.Session() as sess:
 				delta[k+1] = delta[k]
 
 		if rho[k] > eta:
-			loss_val = eval_loss(sess)
-			accuracy_val = eval_accuracy(sess)
-			test_val = eval_loss_validation(sess)
-			print('loss is ' + str(loss_val))
-			print('validation loss is ' + str(test_val))
-			print('accuracy is ' + str(accuracy_val))
 			update_weights(sess,p)
 			print('weight is updated')
 			new_y = eval_y(sess)
@@ -567,8 +602,14 @@ with tf.Session() as sess:
 			new_iteration = True			
 		else:
 			new_iteration = False
+			print('-'*30)
+			print('No update in iteration: {}' .format(k))
 			continue
 
+end = time.time()
+
+loop_time = end - start
+each_iteration_avg_time = loop_time / (k+1)
 
 
 
