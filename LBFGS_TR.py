@@ -571,12 +571,11 @@ with tf.Session() as sess:
 	sess.run(init)
 	#-------- main loop ----------
 	for k in tqdm( range(max_num_iter) ):
+		print('-'*60)
+		print('iteration: {}' .format(k))
 		
 		if new_iteration:
 			set_multi_batch(num_batch_in_data, new_iteration_number)
-			print('-'*60)
-			print('iteration: {}' .format(k))
-			new_iteration_number += 1
 			save_print_training_results(sess)
 
 		g = eval_gradient_vec(sess)	
@@ -596,24 +595,29 @@ with tf.Session() as sess:
 		rho[k] = eval_reduction_ratio(sess, g, p)
 		if rho[k] < 1/4:
 			delta[k+1] = 1/4 * delta[k]
+			print('shrinking trust region radius')
 		else:
 			if rho[k] > 3/4 and isclose( norm(p), delta[k] ):
 				delta[k+1] = min(2*delta[k], delta_hat)
+				print('expanding trust region radius')
 			else:
 				delta[k+1] = delta[k]
 
 		if rho[k] > eta:
 			update_weights(sess,p)
-			print('weight is updated')
+			print('weights are updated')
 			new_y = eval_y(sess)
 			new_s = p
 			update_S_Y(new_s,new_y)
 			gamma = (new_y.T @ new_y) / (new_s.T @ new_y)
-			new_iteration = True			
+			if gamma < 0 or isclose(gamma,0):
+				print('WARNING! -- gamma is not stable')
+			new_iteration = True
+			new_iteration_number += 1			
 		else:
 			new_iteration = False
 			print('-'*30)
-			print('No update in iteration: {}' .format(k))
+			print('No update in this iteration')
 
 end = time.time()
 
@@ -622,6 +626,24 @@ active_iterations_time = loop_time / (new_iteration_number)
 each_iteration_avg_time = loop_time / (k+1)
 
 
+import pickle
 
+result_file_path = './results/results_experiment_1.pkl'
+# Saving the objects:
+with open(result_file_path, 'wb') as f: 
+	pickle.dump([loss_train_results, loss_validation_results, 
+													loss_test_results], f)
+	pickle.dump([accuracy_train_results, accuracy_validation_results, 
+													accuracy_test_results], f)
+	pickle.dump([loop_time, active_iterations_time, each_iteration_avg_time], f)
 
+# import pickle
+# result_file_path = './results/results_experiment_1.pkl'
+# with open(result_file_path,'rb') as f:  # Python 3: open(..., 'rb')
+# 	loss_train_results, loss_validation_results, loss_test_results = \
+# 																pickle.load(f)
+# 	accuracy_train_results,accuracy_validation_results, \
+# 										accuracy_test_results = pickle.load(f)
+# 	loop_time, active_iterations_time, each_iteration_avg_time = \
+# 																pickle.load(f)
 
