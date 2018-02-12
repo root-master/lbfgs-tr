@@ -553,7 +553,7 @@ def set_multi_batch(num_batch_in_data, iteration):
 
 #--------- LOOP PARAMS ------------
 delta_hat = 3 # upper bound for trust region radius
-max_num_iter = 10000 # max bunmber of trust region iterations
+max_num_iter = 1000 # max bunmber of trust region iterations
 delta = np.zeros(max_num_iter+1)
 delta[0] = delta_hat * 0.75
 rho = np.zeros(max_num_iter) # true reduction / predicted reduction ratio
@@ -579,8 +579,9 @@ with tf.Session() as sess:
 			save_print_training_results(sess)
 
 		g = eval_gradient_vec(sess)	
-
-		if norm(g) < tolerance:
+		norm_g = norm(g)
+		print('norm of g = {0:.4f}' .format(norm_g))
+		if norm_g < tolerance:
 			print('-'*60)
 			print('gradient vanished')
 			print('maybe convergence -- breaking the trust region loop!')
