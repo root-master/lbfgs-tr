@@ -33,7 +33,7 @@ minibatch = 1024
 m = 10
 S = np.array([[]])
 Y = np.array([[]])
-gamma = 0.2
+gamma = 0.5
 
 # GLOBAL VARIABLES - MATRICES
 P_ll = np.array([[]]) # P_parallel 
@@ -562,7 +562,7 @@ eta = 1/4 * 0.9 # eta \in [0,1/4)
 
 new_iteration = True
 new_iteration_number = 0
-num_batch_in_data = 5
+num_batch_in_data = 3
 
 tolerance = 1E-5
 
