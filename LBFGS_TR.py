@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import inv, qr, eig, norm
 import math
 from math import isclose, sqrt
-from tqdm import tqdm
+#from tqdm import tqdm
 import time
 import tensorflow as tf
 tf.reset_default_graph()
@@ -570,7 +570,7 @@ with tf.Session() as sess:
 	start = time.time()
 	sess.run(init)
 	#-------- main loop ----------
-	for k in tqdm( range(max_num_iter) ):
+	for k in range(max_num_iter):
 		print('-'*60)
 		print('iteration: {}' .format(k))
 		
