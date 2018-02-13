@@ -33,7 +33,7 @@ minibatch = 512
 m = 10
 S = np.array([[]])
 Y = np.array([[]])
-gamma = 0.5
+gamma = 0.2
 
 # GLOBAL VARIABLES - MATRICES
 P_ll = np.array([[]]) # P_parallel 
