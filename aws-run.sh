@@ -9,7 +9,7 @@ do
 			for method in ${methods[@]}
 				do
 					echo $m - $n - $method
-					python LBFGS_TR.py -m=$m -num-batch=$n -method=$method
+					python LBFGS_TR.py -m=$m -num-batch=$n -method=$method >> output.txt
 					sleep 5
 				done
 		done

@@ -876,13 +876,13 @@ with open(result_file_path, 'wb') as f:
 													accuracy_test_results], f)
 	pickle.dump([loop_time, each_iteration_avg_time], f)
 
-# import pickle
-# result_file_path = './results/results_experiment_' + str(method) + '_m_' \
-# 							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
-# with open(result_file_path,'rb') as f:  # Python 3: open(..., 'rb')
-# 	loss_train_results, loss_validation_results, loss_test_results = \
-# 																pickle.load(f)
-# 	accuracy_train_results,accuracy_validation_results, \
-# 										accuracy_test_results = pickle.load(f)
-# 	loop_time, each_iteration_avg_time = pickle.load(f)
+import pickle
+result_file_path = './results/results_experiment_' + str(method) + '_m_' \
+							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
+with open(result_file_path,'rb') as f:  # Python 3: open(..., 'rb')
+	loss_train_results, loss_validation_results, loss_test_results = \
+																pickle.load(f)
+	accuracy_train_results,accuracy_validation_results, \
+										accuracy_test_results = pickle.load(f)
+	loop_time, each_iteration_avg_time = pickle.load(f)
 
