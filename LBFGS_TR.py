@@ -11,7 +11,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--storage', '-m', default=10, help='The Memory Storage')
-parser.add_argument('--mini_batch','-batch', default=500,help='minibatch size')
+parser.add_argument('--mini_batch','-batch', default=1000,help='minibatch size')
 parser.add_argument('--num_batch_in_data', '-num-batch',default=5,
         							help='number of batches with overlap')
 parser.add_argument('--method', '-method',default='trust-region',
@@ -29,6 +29,7 @@ num_batch_in_data = int(args.num_batch_in_data)
 method = str(args.method)
 # ['line-search','trust-region']
 
+max_num_iter = 200
 ###############################################################################
 ######################## MNIST DATA ###########################################
 ###############################################################################
@@ -694,7 +695,7 @@ def set_multi_batch(num_batch_in_data, iteration):
 	return
 
 
-def lbfgs_line_search_algorithm(sess,max_num_iter=1000):
+def lbfgs_line_search_algorithm(sess,max_num_iter=max_num_iter):
 	tolerance = 1E-5
 
 	global gamma
@@ -747,7 +748,7 @@ def lbfgs_line_search_algorithm(sess,max_num_iter=1000):
 	return
 
 
-def lbfgs_trust_region_algorithm(sess,max_num_iter=1000):
+def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 	#--------- LOOP PARAMS ------------
 	delta_hat = 3 # upper bound for trust region radius
 	#max_num_iter = 1000 # max bunmber of trust region iterations
