@@ -654,7 +654,7 @@ def save_print_training_results(sess):
 
 	# saving training results
 	loss_train_results.append(loss_train)
-	loss_validation_results.append(accuracy_train)
+	loss_validation_results.append(loss_validation)
 	loss_test_results.append(loss_test)
 	accuracy_train_results.append(accuracy_train)
 	accuracy_validation_results.append(accuracy_validation)
@@ -877,12 +877,12 @@ with open(result_file_path, 'wb') as f:
 	pickle.dump([loop_time, each_iteration_avg_time], f)
 
 # import pickle
-# result_file_path = './results/results_experiment_1.pkl'
+# result_file_path = './results/results_experiment_' + str(method) + '_m_' \
+# 							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
 # with open(result_file_path,'rb') as f:  # Python 3: open(..., 'rb')
 # 	loss_train_results, loss_validation_results, loss_test_results = \
 # 																pickle.load(f)
 # 	accuracy_train_results,accuracy_validation_results, \
 # 										accuracy_test_results = pickle.load(f)
-# 	loop_time, active_iterations_time, each_iteration_avg_time = \
-# 																pickle.load(f)
+# 	loop_time, each_iteration_avg_time = pickle.load(f)
 
