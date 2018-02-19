@@ -8,7 +8,9 @@ do
 		do
 			for method in ${methods[@]}
 				do
+					echo $m - $n - $method
 					python LBFGS_TR.py -m=$m -num-batch=$n -method=$method
+					sleep 5
 				done
 		done
 done
