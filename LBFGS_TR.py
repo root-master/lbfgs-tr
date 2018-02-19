@@ -30,6 +30,7 @@ method = str(args.method)
 # ['line-search','trust-region']
 
 max_num_iter = 200
+iter_num = 0
 ###############################################################################
 ######################## MNIST DATA ###########################################
 ###############################################################################
@@ -743,6 +744,9 @@ def lbfgs_line_search_algorithm(sess,max_num_iter=max_num_iter):
 		print('gamma = {0:.4f}' .format(gamma))
 		update_weights(sess,p)
 		print('weights are updated')
+
+		global iter_num
+		iter_num = k
 				
 		k += 1
 	return
@@ -836,6 +840,9 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 			print('-'*30)
 			print('No update in this iteration')
 
+		global iter_num
+		iter_num = k
+
 		k += 1
 	return
 
@@ -854,8 +861,7 @@ with tf.Session() as sess:
 end = time.time()
 
 loop_time = end - start
-active_iterations_time = loop_time / (new_iteration_number)
-each_iteration_avg_time = loop_time / (k+1)
+each_iteration_avg_time = loop_time / (iter_num+1)
 
 
 import pickle
@@ -868,7 +874,7 @@ with open(result_file_path, 'wb') as f:
 													loss_test_results], f)
 	pickle.dump([accuracy_train_results, accuracy_validation_results, 
 													accuracy_test_results], f)
-	pickle.dump([loop_time, active_iterations_time, each_iteration_avg_time], f)
+	pickle.dump([loop_time, each_iteration_avg_time], f)
 
 # import pickle
 # result_file_path = './results/results_experiment_1.pkl'
