@@ -343,7 +343,7 @@ def lbfgs_line_search_subproblem_solver(sess, g):
 
 	P_ll = Psi @ inv(R) @ V # P_parallel 
 	g_ll = P_ll.T @ g	# g_Parallel
-	g_NL_norm = sqrt ( norm(g) ** 2 - norm(g_ll) ** 2 )
+	g_NL_norm = sqrt ( abs( norm(g) ** 2 - norm(g_ll) ** 2 ) )
 
 	p = - 1 / gamma * \
 			( g - Psi @ inv( gamma * inv(M) + Psi.T @ Psi ) @ (Psi.T @ g) )
