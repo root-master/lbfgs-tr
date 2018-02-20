@@ -16,12 +16,16 @@ parser.add_argument('--num_batch_in_data', '-num-batch',default=5,
         							help='number of batches with overlap')
 parser.add_argument('--method', '-method',default='trust-region',
         	help="""Method of optimization ['line-search','trust-region']""")
+parser.add_argument(
+        '--whole_gradient','-use-whole-data', action='store_true',default=False,
+        help='Compute the gradient using all data')
 
 args = parser.parse_args()
 
 minibatch = int(args.mini_batch)
 m = int(args.storage)
 num_batch_in_data = int(args.num_batch_in_data)
+use_whole_data = args.whole_gradient
 # if minibatch==500: ==> num_batch_in_data in [3, 6, 9, 12, 18, 36, 54, 108]
 # if minibatch==1000 ==> num_batch_in_data in [3, 6, 9, 18, 54]
 # if minibatch ==540 ==> num_batch_in_data in [5, 10, 20, 25, 50, 100]
@@ -678,6 +682,11 @@ def set_multi_batch(num_batch_in_data, iteration):
 	global X_train_multi
 	global y_train_multi
 
+	if use_whole_data:
+		X_train_multi = X_train
+		y_train_multi = y_train
+		return
+
 	set_1, set_2 = permutation(num_batch_in_data,iteration)
 	overlap_batch_size = X_train.shape[0] // num_batch_in_data
 	start_index_1 = set_1[0] * overlap_batch_size
@@ -868,6 +877,9 @@ import pickle
 
 result_file_path = './results/results_experiment_' + str(method) + '_m_' \
 							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
+if use_whole_data:
+	result_file_path = './results/results_experiment_' + str(method) + '_m_' \
+							+ str(m) + '_whole_data' + '.pkl'
 # Saving the objects:
 with open(result_file_path, 'wb') as f: 
 	pickle.dump([loss_train_results, loss_validation_results, 
@@ -876,13 +888,13 @@ with open(result_file_path, 'wb') as f:
 													accuracy_test_results], f)
 	pickle.dump([loop_time, each_iteration_avg_time], f)
 
-import pickle
-result_file_path = './results/results_experiment_' + str(method) + '_m_' \
-							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
-with open(result_file_path,'rb') as f:  # Python 3: open(..., 'rb')
-	loss_train_results, loss_validation_results, loss_test_results = \
-																pickle.load(f)
-	accuracy_train_results,accuracy_validation_results, \
-										accuracy_test_results = pickle.load(f)
-	loop_time, each_iteration_avg_time = pickle.load(f)
+# import pickle
+# result_file_path = './results/results_experiment_' + str(method) + '_m_' \
+# 							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
+# with open(result_file_path,'rb') as f:  # Python 3: open(..., 'rb')
+# 	loss_train_results, loss_validation_results, loss_test_results = \
+# 																pickle.load(f)
+# 	accuracy_train_results,accuracy_validation_results, \
+# 										accuracy_test_results = pickle.load(f)
+# 	loop_time, each_iteration_avg_time = pickle.load(f)
 
