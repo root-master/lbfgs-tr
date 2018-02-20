@@ -429,7 +429,7 @@ def lbfgs_trust_region_subproblem_solver(delta, g):
 
 	P_ll = Psi @ inv(R) @ V # P_parallel 
 	g_ll = P_ll.T @ g	# g_Parallel
-	g_NL_norm = sqrt ( norm(g) ** 2 - norm(g_ll) ** 2 )
+	g_NL_norm = sqrt ( abs( norm(g) ** 2 - norm(g_ll) ** 2 ) )
 
 	sigma = 0
 	phi = phi_bar_func(sigma,delta)
