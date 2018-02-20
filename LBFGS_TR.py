@@ -454,7 +454,7 @@ def eval_reduction_ratio(sess,g,p):
 
 	if S.size is not 0:
 		p_ll = P_ll.T @ p
-		p_NL_norm = sqrt ( norm(p) ** 2 - norm(p_ll) ** 2 )
+		p_NL_norm = sqrt ( abs( norm(p) ** 2 - norm(p_ll) ** 2 ) )
 		p_T_B_p = sum( Lambda_1 * p_ll ** 2)  + gamma * p_NL_norm ** 2
 		pred =  - (g @ p  + 1/2 * p_T_B_p)
 	else:
