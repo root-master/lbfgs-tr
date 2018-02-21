@@ -11,7 +11,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--storage', '-m', default=10, help='The Memory Storage')
-parser.add_argument('--mini_batch','-batch', default=1000,help='minibatch size')
+parser.add_argument('--mini_batch','-minibatch', default=1000,help='minibatch size')
 parser.add_argument('--num_batch_in_data', '-num-batch',default=5,
         							help='number of batches with overlap')
 parser.add_argument('--method', '-method',default='trust-region',
@@ -875,11 +875,11 @@ each_iteration_avg_time = loop_time / (iter_num+1)
 
 import pickle
 
-result_file_path = './results/results_experiment_' + str(method) + '_m_' \
+result_file_path = './results/results_experiment_FEB_20_' + str(method) + '_m_' \
 							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
 if use_whole_data:
-	result_file_path = './results/results_experiment_' + str(method) + '_m_' \
-							+ str(m) + '_whole_data' + '.pkl'
+	result_file_path = './results/results_experiment_FEB_20_' + str(method) + '_m_' \
+							+ str(m) + '_n_2' + '.pkl'
 # Saving the objects:
 with open(result_file_path, 'wb') as f: 
 	pickle.dump([loss_train_results, loss_validation_results, 
