@@ -875,10 +875,10 @@ each_iteration_avg_time = loop_time / (iter_num+1)
 
 import pickle
 
-result_file_path = './results/results_experiment_FEB_20_' + str(method) + '_m_' \
+result_file_path = './results/results_experiment_FEB_23_' + str(method) + '_m_' \
 							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
 if use_whole_data:
-	result_file_path = './results/results_experiment_FEB_20_' + str(method) + '_m_' \
+	result_file_path = './results/results_experiment_FEB_23_' + str(method) + '_m_' \
 							+ str(m) + '_n_2' + '.pkl'
 # Saving the objects:
 with open(result_file_path, 'wb') as f: 
