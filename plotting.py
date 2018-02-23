@@ -2,6 +2,15 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
+
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+
 results_dict = {}
 
 def load_pickle(file='file.pkl'):
@@ -135,6 +144,74 @@ for m in m_vec:
 		legend = str(method) + ' $m =$' + str(m)
 		plt.plot(n_vec, min_test_loss[key],'-*',label=legend,markersize=10)
 		plt.legend(loc=1)
+
+
+performance_results_dict = {}
+m_vec = [15,20]
+n_vec = [2,4] # 2 stands for using whole data
+method_vec = ['line-search','trust-region']
+for m in m_vec:
+	for n in n_vec:
+		for method in method_vec:
+			result_file_path = results_folder + 'results_experiment_FEB_20_' + \
+				str(method) + '_m_'+ str(m) + '_n_' + str(n) + '.pkl'
+			results = load_pickle(file=result_file_path)
+			key = 'results_' + str(method) + '_m_' + str(m) + '_n_' + str(n) 
+			performance_results_dict[key] = results
+
+
+
+for m in m_vec:	
+	for n in n_vec:
+		plt.figure()		
+		for method in method_vec:
+			key_result = 'results_' + str(method) + '_m_' + str(m) + '_n_' + str(n)
+			loss_train = performance_results_dict[key_result][0]
+			loss_test  = performance_results_dict[key_result][2]
+			x_vec = range(len(loss_train)) 
+			legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
+					+ str(n) + ' -- (train loss)'
+			legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
+					+ str(n) + ' -- (test loss) '
+			plt.plot(x_vec,loss_train,label=legend_1)
+			plt.plot(x_vec,loss_test,label=legend_2)
+			plt.xlabel('iterations')
+			plt.ylabel('loss')
+			plt.legend(loc=1)
+			plot_path = plots_folder + 'performance_' + '_loss_' + '_m_' \
+											+ str(m) + '_n_' + str(n) + '.eps'
+			plt.savefig(plot_path, format='eps', dpi=1000)
+
+
+for m in m_vec:	
+	for n in n_vec:
+		plt.figure()		
+		for method in method_vec:
+			key_result = 'results_' + str(method) + '_m_' + str(m) + '_n_' + str(n)
+			accuracy_train = performance_results_dict[key_result][3]
+			accuracy_test  = performance_results_dict[key_result][5]
+			x_vec = range(len(accuracy_train)) 
+			legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
+					+ str(n) + ' -- (train accuracy)'
+			legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
+					+ str(n) + ' -- (test accuracy) '
+			plt.plot(x_vec,accuracy_train,label=legend_1)
+			plt.plot(x_vec,accuracy_test,label=legend_2)
+			plt.xlabel('iterations')
+			plt.ylabel('accuracy')
+			plt.legend(loc=4)
+			plot_path = plots_folder + 'performance_' + '_accuracy_' + '_m_' \
+											+ str(m) + '_n_' + str(n) + '.eps'
+			plt.savefig(plot_path, format='eps', dpi=1000)
+
+
+
+
+
+
+
+
+
 
 
 
