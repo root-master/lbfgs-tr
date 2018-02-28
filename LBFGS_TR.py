@@ -19,6 +19,7 @@ parser.add_argument('--method', '-method',default='trust-region',
 parser.add_argument(
         '--whole_gradient','-use-whole-data', action='store_true',default=False,
         help='Compute the gradient using all data')
+parser.add_argument('--max_iter', '-maxiter', default=200, help='max iterations')
 
 args = parser.parse_args()
 
@@ -32,8 +33,8 @@ use_whole_data = args.whole_gradient
 # if minibatch ==1080 ==> num_batch_in_data in [5, 10, 25, 50]
 method = str(args.method)
 # ['line-search','trust-region']
+max_num_iter = int(args.max_iter)
 
-max_num_iter = 10
 iter_num = 0
 ###############################################################################
 ######################## MNIST DATA ###########################################
