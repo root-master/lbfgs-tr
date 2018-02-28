@@ -15,4 +15,4 @@ export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
 module load anaconda3
 source activate jacobenv
 
-python LBFGS_TR.py -m=10 -num-batch=500 -method='line-search'
+python LBFGS_TR.py -m=10 -num-batch=500 -method='line-search' -maxiter=20
