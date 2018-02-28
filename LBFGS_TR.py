@@ -33,7 +33,7 @@ use_whole_data = args.whole_gradient
 method = str(args.method)
 # ['line-search','trust-region']
 
-max_num_iter = 200
+max_num_iter = 10
 iter_num = 0
 ###############################################################################
 ######################## MNIST DATA ###########################################

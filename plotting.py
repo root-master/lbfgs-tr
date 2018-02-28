@@ -11,8 +11,6 @@ rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-results_dict = {}
-
 def load_pickle(file='file.pkl'):
 	with open(result_file_path,'rb') as f:
 		loss_train_results, loss_validation_results, loss_test_results = \
@@ -41,8 +39,10 @@ results_folder = './results/'
 # folder to save plots
 plots_folder = './report/plots/'
 
+results_dict = {}
+
 m_vec = [5,10,15,20]
-n_vec = [2,3,6,12,36,54] # 2 stands for using whole data
+n_vec = [2,3,6,12] # 2 stands for using whole data
 method_vec = ['line-search','trust-region']
 for m in m_vec:
 	for n in n_vec:
@@ -70,6 +70,9 @@ for m in m_vec:
 		legend = str(method) + ' $m =$' + str(m)
 		plt.plot(n_vec, loop_time[key],'-*',label=legend,markersize=10)
 		plt.legend(loc=1)
+plot_path = plots_folder + 'loop_time.eps'
+plt.savefig(plot_path, format='eps', dpi=1000)
+
 	
 
 # max train accuracy in 200 iterations - fixed on m
@@ -89,6 +92,9 @@ for m in m_vec:
 		plt.plot(n_vec, max_accuracy_train[key],'-*',label=legend,markersize=10)
 		plt.legend(loc=1)
 
+plot_path = plots_folder + 'max_accuracy_train.eps'
+plt.savefig(plot_path, format='eps', dpi=1000)
+
 
 # max test accuracy in 200 iterations - fixed on m
 max_accuracy_test = {}
@@ -98,7 +104,7 @@ plt.xlabel('number of multi batch')
 plt.ylabel('accuracy')
 for m in m_vec:
 	for method in method_vec:
-		key = 'max_accuracy_train_' + str(method) + '_m_' + str(m) 
+		key = 'max_accuracy_test_' + str(method) + '_m_' + str(m) 
 		max_accuracy_test[key] = []
 		for n in n_vec:
 			key_result = 'results_' + str(method) + '_m_' + str(m) + '_n_' + str(n)
@@ -106,6 +112,9 @@ for m in m_vec:
 		legend = str(method) + ' $m =$' + str(m)
 		plt.plot(n_vec, max_accuracy_test[key],'-*',label=legend,markersize=10)
 		plt.legend(loc=1)
+
+plot_path = plots_folder + 'max_accuracy_test.eps'
+plt.savefig(plot_path, format='eps', dpi=1000)
 
 
 # min training loss in 200 iterations - fixed on m
@@ -117,7 +126,7 @@ plt.ylabel('loss')
 
 for m in m_vec:
 	for method in method_vec:
-		key = 'max_accuracy_train_' + str(method) + '_m_' + str(m) 
+		key = 'min_loss_train_' + str(method) + '_m_' + str(m) 
 		min_train_loss[key] = []
 		for n in n_vec:
 			key_result = 'results_' + str(method) + '_m_' + str(m) + '_n_' + str(n)
@@ -126,6 +135,8 @@ for m in m_vec:
 		plt.plot(n_vec, min_train_loss[key],'-*',label=legend,markersize=10)
 		plt.legend(loc=1)
 
+plot_path = plots_folder + 'min_loss_train.eps'
+plt.savefig(plot_path, format='eps', dpi=1000)
 
 # min test loss in 200 iterations - fixed on m
 min_test_loss = {}
@@ -136,7 +147,7 @@ plt.ylabel('loss')
 
 for m in m_vec:
 	for method in method_vec:
-		key = 'max_accuracy_train_' + str(method) + '_m_' + str(m) 
+		key = 'max_loss_test_' + str(method) + '_m_' + str(m) 
 		min_test_loss[key] = []
 		for n in n_vec:
 			key_result = 'results_' + str(method) + '_m_' + str(m) + '_n_' + str(n)
@@ -144,6 +155,10 @@ for m in m_vec:
 		legend = str(method) + ' $m =$' + str(m)
 		plt.plot(n_vec, min_test_loss[key],'-*',label=legend,markersize=10)
 		plt.legend(loc=1)
+
+plot_path = plots_folder + 'min_loss_test.eps'
+plt.savefig(plot_path, format='eps', dpi=1000)
+
 
 
 performance_results_dict = {}
@@ -169,10 +184,18 @@ for m in m_vec:
 			loss_train = performance_results_dict[key_result][0]
 			loss_test  = performance_results_dict[key_result][2]
 			x_vec = range(len(loss_train)) 
-			legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
-					+ str(n) + ' -- (train loss)'
-			legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
-					+ str(n) + ' -- (test loss) '
+			
+			if n==2:
+				legend_1 = str(method) + ' $m =$' + str(m) + ' -- ' + \
+				'full batch' + ' -- (train loss)'
+				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				'full batch' + ' -- (test loss) '
+			else:
+				legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				'half batch' + ' -- (train loss)'
+				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				'half batch' + ' -- (test loss) '
+
 			plt.plot(x_vec,loss_train,label=legend_1)
 			plt.plot(x_vec,loss_test,label=legend_2)
 			plt.xlabel('iterations')
@@ -191,10 +214,18 @@ for m in m_vec:
 			accuracy_train = performance_results_dict[key_result][3]
 			accuracy_test  = performance_results_dict[key_result][5]
 			x_vec = range(len(accuracy_train)) 
-			legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
-					+ str(n) + ' -- (train accuracy)'
-			legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ '$n =$' \
-					+ str(n) + ' -- (test accuracy) '
+
+			if n==2:
+				legend_1 = str(method) + ' $m =$' + str(m) + ' -- ' + \
+				'full batch' + ' -- (train accuracy)'
+				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				'full batch' + ' -- (test accuracy) '
+			else:
+				legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				'half batch' + ' -- (train accuracy)'
+				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				'half batch' + ' -- (test accuracy) '
+
 			plt.plot(x_vec,accuracy_train,label=legend_1)
 			plt.plot(x_vec,accuracy_test,label=legend_2)
 			plt.xlabel('iterations')
