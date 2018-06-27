@@ -776,9 +776,9 @@ def find_gamma_preconditioning():
 		print('no need for safe gaurding')
 		gama = self.find_gamma_common()
 		gama = max( 1, gama )
-		else:
-			gama = 0.9 * eig_min
-		return gama
+	else:
+		gama = 0.9 * eig_min
+	return gama
 
 
 def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
