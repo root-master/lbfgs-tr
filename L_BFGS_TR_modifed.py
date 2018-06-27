@@ -40,8 +40,8 @@ iter_num = 0
 ######################## MNIST DATA ###########################################
 ###############################################################################
 import MNIST_input_modified
-from input_MNIST_data import shuffle_data
-data = input_MNIST_data.read_data_sets("./data/", one_hot=True)
+from MNIST_input_modified import shuffle_data
+data = MNIST_input_modified.read_data_sets("./data/", one_hot=True)
 X_train, y_train = shuffle_data(data)
 # input and output shape
 n_input   = data.train.images.shape[1]  # here MNIST data input (28,28)
