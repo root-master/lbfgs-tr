@@ -763,7 +763,7 @@ def lbfgs_line_search_algorithm(sess,max_num_iter=max_num_iter):
 	return
 
 
-def find_gamma_preconditioning():
+def find_gamma_preconditioning(new_y, new_s):
 	S_T_Y = S.T @ Y
 	S_T_S = S.T @ S
 	L = np.tril(S_T_Y,k=-1)
@@ -776,7 +776,7 @@ def find_gamma_preconditioning():
 	eig_min = min(eigen_values_general_problem)
 	if eig_min < 0:
 		print('no need for safe gaurding')
-		gama = self.find_gamma_common()
+		gama = (new_y.T @ new_y) / (new_s.T @ new_y)
 		gama = max( 1, gama )
 	else:
 		gama = 0.9 * eig_min
@@ -858,7 +858,7 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 			new_s = p
 			update_S_Y(new_s,new_y)
 			if preconditioning:
-				gamma = find_gamma_preconditioning()
+				gamma = find_gamma_preconditioning(new_s,new_y)
 			else:
 				gamma = (new_y.T @ new_y) / (new_s.T @ new_y)
 			print('gamma = {0:.4f}' .format(gamma))
