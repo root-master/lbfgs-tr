@@ -20,6 +20,10 @@ parser.add_argument(
         '--whole_gradient','-use-whole-data', action='store_true',default=False,
         help='Compute the gradient using all data')
 parser.add_argument('--max_iter', '-maxiter', default=200, help='max iterations')
+parser.add_argument(
+        '--preconditioning','-preconditioning', action='store_true',default=False,
+        help='Compute the gradient using all data')
+
 
 args = parser.parse_args()
 
@@ -27,13 +31,10 @@ minibatch = int(args.mini_batch)
 m = int(args.storage)
 num_batch_in_data = int(args.num_batch_in_data)
 use_whole_data = args.whole_gradient
-# if minibatch==500: ==> num_batch_in_data in [3, 6, 9, 12, 18, 36, 54, 108]
-# if minibatch==1000 ==> num_batch_in_data in [3, 6, 9, 18, 54]
-# if minibatch ==540 ==> num_batch_in_data in [5, 10, 20, 25, 50, 100]
-# if minibatch ==1080 ==> num_batch_in_data in [5, 10, 25, 50]
 method = str(args.method)
 # ['line-search','trust-region']
 max_num_iter = int(args.max_iter)
+preconditioning = args.preconditioning
 
 iter_num = 0
 ###############################################################################
@@ -760,6 +761,26 @@ def lbfgs_line_search_algorithm(sess,max_num_iter=max_num_iter):
 	return
 
 
+def find_gamma_preconditioning():
+	S_T_Y = S.T @ Y
+	S_T_S = S.T @ S
+	L = np.tril(S_T_Y,k=-1)
+	U = np.tril(S_T_Y.T,k=-1).T
+	D = np.diag( np.diag(S_T_Y) )
+
+	H = L + D + L.T
+	eigen_values_general_problem = eigvals(H, S_T_S)
+	eigen_values_general_problem = eigen_values_general_problem.real
+	eig_min = min(eigen_values_general_problem)
+	if eig_min < 0:
+		print('no need for safe gaurding')
+		gama = self.find_gamma_common()
+		gama = max( 1, gama )
+		else:
+			gama = 0.9 * eig_min
+		return gama
+
+
 def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 	#--------- LOOP PARAMS ------------
 	delta_hat = 3 # upper bound for trust region radius
@@ -834,7 +855,10 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 			new_y = eval_y(sess)
 			new_s = p
 			update_S_Y(new_s,new_y)
-			gamma = (new_y.T @ new_y) / (new_s.T @ new_y)
+			if preconditioning:
+				gamma = find_gamma_preconditioning()
+			else:
+				gamma = (new_y.T @ new_y) / (new_s.T @ new_y)
 			print('gamma = {0:.4f}' .format(gamma))
 			if gamma < 0 or isclose(gamma,0):
 				print('WARNING! -- gamma is not stable')
