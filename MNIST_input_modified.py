@@ -147,7 +147,7 @@ def read_data_sets(train_dir, fake_data=False, one_hot=False):
     train_images = train_images - train_images.mean(0)
     test_images = test_images - test_images.mean(0)
     
-    data_sets.train = DataSet(X_train, y_train)
+    data_sets.train = DataSet(train_images, train_labels)
     data_sets.test = DataSet(test_images, test_labels)
     return data_sets
 
