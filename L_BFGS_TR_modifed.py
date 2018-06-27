@@ -1,5 +1,7 @@
 import numpy as np
-from numpy.linalg import inv, qr, eig, norm
+from numpy.linalg import inv, qr, norm, pinv
+from scipy.linalg import eig, eigvals
+
 import math
 from math import isclose, sqrt
 #from tqdm import tqdm
