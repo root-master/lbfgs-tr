@@ -3,13 +3,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica'],'size': 13})
 ## for Palatino and other serif fonts use:
 #rc('font',**{'family':'serif','serif':['Palatino']})
 rc('text', usetex=True)
-
+rc('xtick', labelsize=18)
+rc('ytick', labelsize=18)
+rc('axes', labelsize=24)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
+
+# rc('font', size=SMALL_SIZE)          # controls default text sizes
+# rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+# rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+# rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+# rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+# rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+# rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 def load_pickle(file='file.pkl'):
 	with open(result_file_path,'rb') as f:
@@ -71,7 +81,7 @@ for m in m_vec:
 		plt.plot(n_vec, loop_time[key],'-*',label=legend,markersize=10)
 		plt.legend(loc=1)
 plot_path = plots_folder + 'loop_time.eps'
-plt.savefig(plot_path, format='eps', dpi=1000)
+plt.savefig(plot_path, format='eps', dpi=1000,bbox_inches='tight')
 
 	
 
@@ -93,7 +103,7 @@ for m in m_vec:
 		plt.legend(loc=1)
 
 plot_path = plots_folder + 'max_accuracy_train.eps'
-plt.savefig(plot_path, format='eps', dpi=1000)
+plt.savefig(plot_path, format='eps', dpi=1000,bbox_inches='tight')
 
 
 # max test accuracy in 200 iterations - fixed on m
@@ -114,7 +124,7 @@ for m in m_vec:
 		plt.legend(loc=1)
 
 plot_path = plots_folder + 'max_accuracy_test.eps'
-plt.savefig(plot_path, format='eps', dpi=1000)
+plt.savefig(plot_path, format='eps', dpi=1000,bbox_inches='tight')
 
 
 # min training loss in 200 iterations - fixed on m
@@ -136,7 +146,7 @@ for m in m_vec:
 		plt.legend(loc=1)
 
 plot_path = plots_folder + 'min_loss_train.eps'
-plt.savefig(plot_path, format='eps', dpi=1000)
+plt.savefig(plot_path, format='eps', dpi=1000,bbox_inches='tight')
 
 # min test loss in 200 iterations - fixed on m
 min_test_loss = {}
@@ -157,7 +167,7 @@ for m in m_vec:
 		plt.legend(loc=1)
 
 plot_path = plots_folder + 'min_loss_test.eps'
-plt.savefig(plot_path, format='eps', dpi=1000)
+plt.savefig(plot_path, format='eps', dpi=1000,bbox_inches='tight')
 
 
 
@@ -186,14 +196,14 @@ for m in m_vec:
 			x_vec = range(len(loss_train)) 
 			
 			if n==2:
-				legend_1 = str(method) + ' $m =$' + str(m) + ' -- ' + \
+				legend_1 = str(method) + ' $m =$' + str(m) + ', ' + \
 				'full batch' + ' -- (train loss)'
-				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				legend_2 = str(method) + ' $m =$' + str(m) + ', '+ \
 				'full batch' + ' -- (test loss) '
 			else:
-				legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				legend_1 = str(method) + ' $m =$' + str(m) + ', '+ \
 				'half batch' + ' -- (train loss)'
-				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				legend_2 = str(method) + ' $m =$' + str(m) + ', '+ \
 				'half batch' + ' -- (test loss) '
 
 			plt.plot(x_vec,loss_train,label=legend_1)
@@ -203,7 +213,7 @@ for m in m_vec:
 			plt.legend(loc=1)
 			plot_path = plots_folder + 'performance_' + '_loss_' + '_m_' \
 											+ str(m) + '_n_' + str(n) + '.eps'
-			plt.savefig(plot_path, format='eps', dpi=1000)
+			plt.savefig(plot_path, format='eps', dpi=1000,bbox_inches='tight')
 
 
 for m in m_vec:	
@@ -216,14 +226,14 @@ for m in m_vec:
 			x_vec = range(len(accuracy_train)) 
 
 			if n==2:
-				legend_1 = str(method) + ' $m =$' + str(m) + ' -- ' + \
+				legend_1 = str(method) + ' $m =$' + str(m) + ', ' + \
 				'full batch' + ' -- (train accuracy)'
-				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				legend_2 = str(method) + ' $m =$' + str(m) + ', '+ \
 				'full batch' + ' -- (test accuracy) '
 			else:
-				legend_1 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				legend_1 = str(method) + ' $m =$' + str(m) + ', '+ \
 				'half batch' + ' -- (train accuracy)'
-				legend_2 = str(method) + ' $m =$' + str(m) + ' -- '+ \
+				legend_2 = str(method) + ' $m =$' + str(m) + ', '+ \
 				'half batch' + ' -- (test accuracy) '
 
 			plt.plot(x_vec,accuracy_train,label=legend_1)
@@ -233,7 +243,7 @@ for m in m_vec:
 			plt.legend(loc=4)
 			plot_path = plots_folder + 'performance_' + '_accuracy_' + '_m_' \
 											+ str(m) + '_n_' + str(n) + '.eps'
-			plt.savefig(plot_path, format='eps', dpi=1000)
+			plt.savefig(plot_path, format='eps', dpi=1000,bbox_inches='tight')
 
 
 

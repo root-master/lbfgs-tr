@@ -39,7 +39,7 @@ iter_num = 0
 ###############################################################################
 ######################## MNIST DATA ###########################################
 ###############################################################################
-import input_MNIST_data
+import MNIST_input_modified
 from input_MNIST_data import shuffle_data
 data = input_MNIST_data.read_data_sets("./data/", one_hot=True)
 X_train, y_train = shuffle_data(data)
@@ -49,9 +49,6 @@ n_classes = data.train.labels.shape[1]  # here MNIST (0-9 digits)
 
 X_test = data.test.images
 y_test = data.test.labels
-
-X_validation = data.validation.images
-y_validation = data.validation.labels
 
 X_train_multi = []
 y_train_multi = []
@@ -589,10 +586,10 @@ def eval_accuracy_test(sess):
 	return accuracy_val
 
 
-def eval_accuracy_validation(sess):
-	accuracy_val = compute_multibatch_tensor(sess,accuracy, 
-													X_validation,y_validation)
-	return accuracy_val
+# def eval_accuracy_validation(sess):
+# 	accuracy_val = compute_multibatch_tensor(sess,accuracy, 
+# 													X_validation,y_validation)
+# 	return accuracy_val
 
 
 def eval_w_dict(sess):
@@ -627,9 +624,9 @@ def eval_loss_test(sess):
 	loss_val = compute_multibatch_tensor(sess,loss,X_test,y_test)
 	return loss_val
 
-def eval_loss_validation(sess):
-	loss_val = compute_multibatch_tensor(sess,loss,X_validation,y_validation)
-	return loss_val
+# def eval_loss_validation(sess):
+# 	loss_val = compute_multibatch_tensor(sess,loss,X_validation,y_validation)
+# 	return loss_val
 
 def eval_aux_gradient_vec(sess):
 	# assuming that eval_aux_loss is being called before this function call
@@ -645,31 +642,31 @@ def eval_aux_gradient_vec(sess):
 
 # save training results
 loss_train_results = []
-loss_validation_results = []
+# loss_validation_results = []
 loss_test_results = []
 accuracy_train_results = []
-accuracy_validation_results = []
+# accuracy_validation_results = []
 accuracy_test_results = []
 def save_print_training_results(sess):
 	loss_train = eval_loss(sess)
 	accuracy_train = eval_accuracy(sess)
-	loss_validation = eval_loss_validation(sess)
-	accuracy_validation = eval_accuracy_validation(sess)
+	#loss_validation = eval_loss_validation(sess)
+	#accuracy_validation = eval_accuracy_validation(sess)
 	loss_test = eval_loss_test(sess)
 	accuracy_test = eval_accuracy_test(sess)
 
 	# saving training results
 	loss_train_results.append(loss_train)
-	loss_validation_results.append(loss_validation)
+	#loss_validation_results.append(loss_validation)
 	loss_test_results.append(loss_test)
 	accuracy_train_results.append(accuracy_train)
-	accuracy_validation_results.append(accuracy_validation)
+	#accuracy_validation_results.append(accuracy_validation)
 	accuracy_test_results.append(accuracy_test)
 
-	print('LOSS     - train: {0:.4f}, validation: {1:.4f}, test: {2:.4f}' \
-						.format(loss_train, loss_validation, loss_test))
-	print('ACCURACY - train: {0:.4f}, validation: {1:.4f}, test: {2:.4f}' \
-			.format(accuracy_train, accuracy_validation, accuracy_test))
+	print('LOSS     - train: {0:.4f}, test: {1:.4f}' \
+						.format(loss_train, loss_test))
+	print('ACCURACY - train: {0:.4f}, test: {1:.4f}' \
+			.format(accuracy_train, accuracy_test))
 
 def permutation(n,k):
 	set_1 = (k%n, k%n+1)
@@ -884,10 +881,8 @@ if use_whole_data:
 							+ str(m) + '_n_2' + '.pkl'
 # Saving the objects:
 with open(result_file_path, 'wb') as f: 
-	pickle.dump([loss_train_results, loss_validation_results, 
-													loss_test_results], f)
-	pickle.dump([accuracy_train_results, accuracy_validation_results, 
-													accuracy_test_results], f)
+	pickle.dump([loss_train_results, loss_test_results], f)
+	pickle.dump([accuracy_train_results, accuracy_test_results], f)
 	pickle.dump([loop_time, each_iteration_avg_time], f)
 
 # import pickle
