@@ -714,7 +714,7 @@ def set_multi_batch(num_batch_in_data, iteration):
 	global X_train_multi
 	global y_train_multi
 	global XO
-	global Yo
+	global YO
 
 	if use_whole_data:
 		X_train_multi = X_train
