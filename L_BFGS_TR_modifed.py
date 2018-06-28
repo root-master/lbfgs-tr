@@ -21,6 +21,10 @@ parser.add_argument('--method', '-method',default='trust-region',
 parser.add_argument(
         '--whole_gradient','-use-whole-data', action='store_true',default=False,
         help='Compute the gradient using all data')
+parser.add_argument(
+        '--use_overlap','-use-overlap', action='store_true',default=False,
+        help='Compute the gradient using all data')
+
 parser.add_argument('--max_iter', '-maxiter', default=200, help='max iterations')
 parser.add_argument(
         '--preconditioning','-preconditioning', action='store_true',default=False,
@@ -37,6 +41,7 @@ method = str(args.method)
 # ['line-search','trust-region']
 max_num_iter = int(args.max_iter)
 preconditioning = args.preconditioning
+use_overlap = args.use_overlap
 
 iter_num = 0
 ###############################################################################
@@ -55,6 +60,8 @@ y_test = data.test.labels
 
 X_train_multi = []
 y_train_multi = []
+XO = []
+YO = []
 ###############################################################################
 ######################## LBFGS PARAMS #########################################
 ###############################################################################
@@ -470,8 +477,12 @@ def eval_reduction_ratio(sess,g,p):
 	return rho
 
 def eval_y(sess):
-	new_g = eval_aux_gradient_vec(sess)
-	old_g = g
+	if use_overlap:
+		new_g = eval_aux_gradient_vec_overlap(sess)
+		old_g = eval_aux_gradient_vec_overlap(sess)
+	else:
+		new_g = eval_aux_gradient_vec(sess)
+		old_g = g
 	new_y = new_g - old_g
 	return new_y
 
@@ -641,6 +652,22 @@ def eval_aux_gradient_vec(sess):
 	aux_g_vec = dict_of_weight_matrices_to_single_linear_vec(aux_g_dict)
 	return aux_g_vec	
 
+def eval_aux_gradient_vec_overlap(sess):
+	# assuming that eval_aux_loss is being called before this function call
+	aux_g_dict = compute_multibatch_gradient(sess,aux_grad_w,
+												XO,YO)
+	aux_g_vec = dict_of_weight_matrices_to_single_linear_vec(aux_g_dict)
+	return aux_g_vec	
+
+def eval_gradient_vec_overlap(sess):
+	"""returns gradient, here only for mode='robust-multi-batch' 
+	I should modify to consider all other cases"""
+	g_dict = compute_multibatch_gradient(sess,grad_w_tf,
+												XO,YO)
+	g_vec = dict_of_weight_matrices_to_single_linear_vec(g_dict)
+	return g_vec	
+
+
 ###############################################################################
 ######################## TRUST REGION ALGORITHM ###############################
 ###############################################################################
@@ -686,10 +713,14 @@ def set_multi_batch(num_batch_in_data, iteration):
 
 	global X_train_multi
 	global y_train_multi
+	global XO
+	global Yo
 
 	if use_whole_data:
 		X_train_multi = X_train
 		y_train_multi = y_train
+		XO = X_train
+		YO = y_train 
 		return
 
 	set_1, set_2 = permutation(num_batch_in_data,iteration)
@@ -706,6 +737,9 @@ def set_multi_batch(num_batch_in_data, iteration):
 	y_half_batch_1 = y_train[start_index_1:end_index_1]
 	y_half_batch_2 = y_train[start_index_2:end_index_2]
 	y_train_multi = np.concatenate((y_half_batch_1,y_half_batch_2))
+
+	XO = X_half_batch_2
+	YO = y_half_batch_2
 
 	return
 
@@ -831,7 +865,6 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 			
 			# we should call this function everytime before 
 			# evaluation of aux gradient
-			new_loss = eval_aux_loss(sess,p) 
 			new_y = eval_y(sess)
 			new_s = p
 			update_S_Y(new_s,new_y)
@@ -857,6 +890,7 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 				delta[k+1] = delta[k]
 
 		if rho[k] > eta:
+			new_loss = eval_aux_loss(sess,p)
 			new_y = eval_y(sess)
 			new_s = p
 			update_S_Y(new_s,new_y)
