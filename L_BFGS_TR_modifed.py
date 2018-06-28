@@ -825,7 +825,7 @@ def find_gamma_preconditioning(new_y, new_s, mode=pre_cond_mode):
 		AA = - inv(gamma * S.T @ S + L @ inv(D) @ L.T)
 		BB = - inv(gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
 		CC = - inv(D) @ L.T @ (gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
-		DD = inv(D) - inv(D) @ L.T @ (gamma @ S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
+		DD = inv(D) - inv(D) @ L.T @ (gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
 
 		AAA = H - S.T @ Y @ DD @ Y.T @ S 
 		BBB = S.T @ S + S.T @ S @ BB @ Y.T @ S + S.T @ Y @ CC @ S.T @ S 
@@ -843,9 +843,9 @@ def find_gamma_preconditioning(new_y, new_s, mode=pre_cond_mode):
 		AA = - inv(gamma * S.T @ S + L @ inv(D) @ L.T)
 		BB = - inv(gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
 		CC = - inv(D) @ L.T @ (gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
-		DD = inv(D) - inv(D) @ L.T @ (gamma @ S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
+		DD = inv(D) - inv(D) @ L.T @ (gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
 
-		AAA = H - S.T @ Y @ DD @ Y.T @ S - gamma * S.T @ S @ AA @ S.T @ S
+		AAA = H - S.T @ Y @ DD @ Y.T @ S - gamma^2 * S.T @ S @ AA @ S.T @ S
 		BBB = S.T @ S + S.T @ S @ BB @ Y.T @ S + S.T @ Y @ CC @ S.T @ S 
 		eigen_values_general_problem = eigvals(AAA, BBB)
 		eigen_values_general_problem = eigen_values_general_problem.real
