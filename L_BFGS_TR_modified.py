@@ -941,7 +941,9 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 		new_y = eval_y(sess)
 		new_s = p
 		
-		if new_s.T @ new_y > 0:
+		if new_s.T @ new_y < 0 or isclose(new_s.T @ new_y, 0):
+			print('curvature condition did satisfy -- (s,y) was not added')
+		else:
 			update_S_Y(new_s,new_y)
 		
 		if preconditioning:
