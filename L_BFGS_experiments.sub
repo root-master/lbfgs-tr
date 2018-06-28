@@ -11,9 +11,6 @@
 
 jacob
 
-cd ~
-cd lbfgs-tr
-
 declare -a m_vec=(10 20)
 declare -a n_vec=(2,5,10,25,50,100)
 
@@ -22,7 +19,7 @@ do
 	for n in ${n_vec[@]}
 		do
 			echo $m - $n - "preconditioning"
-			python LBFGS_TR_modified.py -m=$m -num-batch=$n -use-overlap -preconditioning -pre-cond-mode=1
+			python L_BFGS_TR_modified.py -m=$m -num-batch=$n -use-overlap -preconditioning -pre-cond-mode=1
 		done
 done
 
@@ -31,6 +28,6 @@ do
 	for n in ${n_vec[@]}
 		do
 			echo $m - $n - "no preconditioning"
-			python LBFGS_TR_modified.py -m=$m -num-batch=$n -use-overlap 
+			python L_BFGS_TR_modified.py -m=$m -num-batch=$n -use-overlap 
 		done
 done
