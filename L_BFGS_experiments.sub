@@ -11,6 +11,9 @@
 
 jacob
 
+cd ~
+cd lbfgs-tr
+
 declare -a m_vec=(10 20)
 declare -a n_vec=(2,5,10,25,50,100)
 
