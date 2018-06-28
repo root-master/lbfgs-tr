@@ -29,6 +29,7 @@ parser.add_argument('--max_iter', '-maxiter', default=200, help='max iterations'
 parser.add_argument(
         '--preconditioning','-preconditioning', action='store_true',default=False,
         help='Compute the gradient using all data')
+parser.add_argument('--pre_cond_mode', '-pre-cond-mode', default=1, help='max iterations')
 
 
 args = parser.parse_args()
@@ -42,6 +43,7 @@ method = str(args.method)
 max_num_iter = int(args.max_iter)
 preconditioning = args.preconditioning
 use_overlap = args.use_overlap
+pre_cond_mode = int(args.pre_cond_mode)
 
 iter_num = 0
 ###############################################################################
@@ -800,7 +802,7 @@ def lbfgs_line_search_algorithm(sess,max_num_iter=max_num_iter):
 	return
 
 
-def find_gamma_preconditioning(new_y, new_s):
+def find_gamma_preconditioning(new_y, new_s, mode=1):
 	S_T_Y = S.T @ Y
 	S_T_S = S.T @ S
 	L = np.tril(S_T_Y,k=-1)
@@ -808,16 +810,38 @@ def find_gamma_preconditioning(new_y, new_s):
 	D = np.diag( np.diag(S_T_Y) )
 
 	H = L + D + L.T
-	eigen_values_general_problem = eigvals(H, S_T_S)
-	eigen_values_general_problem = eigen_values_general_problem.real
-	eig_min = min(eigen_values_general_problem)
-	if eig_min < 0:
-		print('no need for safe gaurding')
-		gama = (new_y.T @ new_y) / (new_s.T @ new_y)
-		gama = max( 1, gama )
+	if mode == 1:
+		eigen_values_general_problem = eigvals(H, S_T_S)
+		eigen_values_general_problem = eigen_values_general_problem.real
+		eig_min = min(eigen_values_general_problem)
+		if eig_min < 0:
+			print('no need for safe gaurding')
+			gama = (new_y.T @ new_y) / (new_s.T @ new_y)
+			gama = max( 1, gama )
+		else:
+			gama = 0.9 * eig_min
+		return gama
+	elif mode==2:
+		AA = - inv(gamma * S.T @ S + L @ inv(D) @ L.T)
+		BB = - inv(gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
+		CC = - inv(D) @ L.T @ (gamma * S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
+		DD = inv(D) - inv(D) @ L.T @ (gamma @ S.T @ S + L @ inv(D) @ L.T) @ L @ inv(D)
+
+		AAA = H - S.T @ Y @ DD @ Y.T @ S 
+		BBB = S.T @ S + S.T @ S @ BB @ Y.T @ S + S.T @ Y @ CC @ S.T @ S 
+		eigen_values_general_problem = eigvals(AAA, BBB)
+		eigen_values_general_problem = eigen_values_general_problem.real
+		eig_min = min(eigen_values_general_problem)
+		if eig_min < 0:
+			print('no need for safe gaurding')
+			gama = (new_y.T @ new_y) / (new_s.T @ new_y)
+			gama = max( 1, gama )
+		else:
+			gama = 0.9 * eig_min
+		return gama
 	else:
-		gama = 0.9 * eig_min
-	return gama
+		return 1
+
 
 
 def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
