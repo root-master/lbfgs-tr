@@ -479,7 +479,7 @@ def eval_reduction_ratio(sess,g,p):
 def eval_y(sess):
 	if use_overlap:
 		new_g = eval_aux_gradient_vec_overlap(sess)
-		old_g = eval_aux_gradient_vec_overlap(sess)
+		old_g = eval_gradient_vec_overlap(sess)
 	else:
 		new_g = eval_aux_gradient_vec(sess)
 		old_g = g
