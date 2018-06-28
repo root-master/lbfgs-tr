@@ -1,0 +1,33 @@
+#! /bin/bash
+#$ -S /bin/bash
+#$ -q gpu.q
+#$ -cwd
+#$ -N myjob
+#$ -j y
+#$ -o GlobalSIP.qlog
+#$ -l mem_free=64G
+#$ -pe smp 20
+#$ -V
+
+jacob
+
+declare -a m_vec=(10 20)
+declare -a n_vec=(2,5,10,25,50,100)
+
+for m in ${m_vec[@]}
+do
+	for n in ${n_vec[@]}
+		do
+			echo $m - $n - "preconditioning"
+			python LBFGS_TR_modified.py -m=$m -num-batch=$n -use-overlap -preconditioning -pre-cond-mode=1
+		done
+done
+
+for m in ${m_vec[@]}
+do
+	for n in ${n_vec[@]}
+		do
+			echo $m - $n - "no preconditioning"
+			python LBFGS_TR_modified.py -m=$m -num-batch=$n -use-overlap 
+		done
+done
