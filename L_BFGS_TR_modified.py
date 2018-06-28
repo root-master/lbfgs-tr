@@ -890,9 +890,8 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 		print('-'*60)
 		print('iteration: {}' .format(k))
 		
-		if new_iteration:
-			set_multi_batch(num_batch_in_data, new_iteration_number)
-			save_print_training_results(sess)
+		set_multi_batch(num_batch_in_data, new_iteration_number)
+		save_print_training_results(sess)
 
 		g = eval_gradient_vec(sess)	
 		norm_g = norm(g)
