@@ -13,7 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--storage', '-m', default=10, help='The Memory Storage')
-parser.add_argument('--mini_batch','-minibatch', default=1000,help='minibatch size')
+parser.add_argument('--mini_batch','-minibatch', default=600,help='minibatch size')
 parser.add_argument('--num_batch_in_data', '-num-batch',default=5,
         							help='number of batches with overlap')
 parser.add_argument('--method', '-method',default='trust-region',
@@ -25,7 +25,7 @@ parser.add_argument(
         '--use_overlap','-use-overlap', action='store_true',default=False,
         help='Compute the gradient using all data')
 
-parser.add_argument('--max_iter', '-maxiter', default=200, help='max iterations')
+parser.add_argument('--max_iter', '-maxiter', default=300, help='max iterations')
 parser.add_argument(
         '--preconditioning','-preconditioning', action='store_true',default=False,
         help='Compute the gradient using all data')
@@ -44,6 +44,12 @@ max_num_iter = int(args.max_iter)
 preconditioning = args.preconditioning
 use_overlap = args.use_overlap
 pre_cond_mode = int(args.pre_cond_mode)
+
+if num_batch_in_data == 2:
+	use_whole_data = True
+
+if use_whole_data:
+	num_batch_in_data = 2
 
 iter_num = 0
 ###############################################################################
@@ -980,11 +986,29 @@ each_iteration_avg_time = loop_time / (iter_num+1)
 
 import pickle
 
-result_file_path = './results/results_experiment_FEB_23_' + str(method) + '_m_' \
-							+ str(m) + '_n_' + str(num_batch_in_data) + '.pkl'
-if use_whole_data:
-	result_file_path = './results/results_experiment_FEB_23_' + str(method) + '_m_' \
-							+ str(m) + '_n_2' + '.pkl'
+if preconditioning:
+	pr = 1
+else:
+	pr = 0
+
+if use_overlap:
+	ov = 1
+else:
+	ov = 0
+
+# m = [5,10,20]
+# n = [2,5,10,25,50,100]
+# pr = [0,1]
+# mode = 1
+# ov = 1
+
+result_file_path = './results/results_GSP_' + \
+				'_m_' + str(m) + \
+				'_n_' + str(num_batch_in_data) + \
+				'_useoverlap_' + str(ov) + \
+				'_precond_' + str(pr) + \
+				'_mode_' + str(pre_cond_mode) + '.pkl'
+
 # Saving the objects:
 with open(result_file_path, 'wb') as f: 
 	pickle.dump([loss_train_results, loss_test_results], f)
