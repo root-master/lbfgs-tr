@@ -2,9 +2,9 @@
 #$ -S /bin/bash
 #$ -q gpu.q
 #$ -cwd
-#$ -N myjob
+#$ -N myjob_1
 #$ -j y
-#$ -o GlobalSIP.qlog
+#$ -o GlobalSIP_1.qlog
 #$ -l mem_free=64G
 #$ -pe smp 20
 #$ -V
