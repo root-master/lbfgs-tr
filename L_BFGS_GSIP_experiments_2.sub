@@ -25,7 +25,7 @@ for m in ${m_vec[@]}
 do
 	for n in ${n_vec[@]}
 	do
-		echo $m - $n - "preconditioning"
+		echo $m - $n - "preconditioning -- 2"
 		python L_BFGS_TR_modified.py -m=$m -num-batch=$n -use-overlap -preconditioning -pre-cond-mode=2
 	done
 done
