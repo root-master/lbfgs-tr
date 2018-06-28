@@ -408,8 +408,11 @@ def lbfgs_trust_region_subproblem_solver(delta, g):
 							[     L.T,		   -D] 
 			]) )
 
+	M = (M + M.T) / 2 
+
 	Q, R = qr(Psi, mode='reduced')
 	eigen_values, eigen_vectors = eig( R @ M @ R.T )
+	eigen_values = eigen_values.real
 
 	# sorted eigen values
 	idx = eigen_values.argsort()
