@@ -940,7 +940,9 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 		new_loss = eval_aux_loss(sess,p)
 		new_y = eval_y(sess)
 		new_s = p
-		update_S_Y(new_s,new_y)
+		
+		if new_s.T @ new_y > 0:
+			update_S_Y(new_s,new_y)
 		
 		if preconditioning:
 			gamma = find_gamma_preconditioning(new_s,new_y)
