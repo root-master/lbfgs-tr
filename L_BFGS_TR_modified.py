@@ -938,18 +938,19 @@ def lbfgs_trust_region_algorithm(sess,max_num_iter=max_num_iter):
 			else:
 				delta[k+1] = delta[k]
 
+		new_loss = eval_aux_loss(sess,p)
+		new_y = eval_y(sess)
+		new_s = p
+		update_S_Y(new_s,new_y)
+		if preconditioning:
+			gamma = find_gamma_preconditioning(new_s,new_y)
+		else:
+			gamma = (new_y.T @ new_y) / (new_s.T @ new_y)
+		print('gamma = {0:.4f}' .format(gamma))
+		if gamma < 0 or isclose(gamma,0):
+			print('WARNING! -- gamma is not stable')
+
 		if rho[k] > eta:
-			new_loss = eval_aux_loss(sess,p)
-			new_y = eval_y(sess)
-			new_s = p
-			update_S_Y(new_s,new_y)
-			if preconditioning:
-				gamma = find_gamma_preconditioning(new_s,new_y)
-			else:
-				gamma = (new_y.T @ new_y) / (new_s.T @ new_y)
-			print('gamma = {0:.4f}' .format(gamma))
-			if gamma < 0 or isclose(gamma,0):
-				print('WARNING! -- gamma is not stable')
 			new_iteration = True
 			new_iteration_number += 1
 
