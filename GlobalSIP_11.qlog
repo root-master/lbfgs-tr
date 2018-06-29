@@ -1,0 +1,19 @@
+10 - 2000 - no preconditioning
+2018-06-29 15:43:26.902014: I tensorflow/core/common_runtime/gpu/gpu_device.cc:955] Found device 0 with properties: 
+name: Tesla K20m
+major: 3 minor: 5 memoryClockRate (GHz) 0.7055
+pciBusID 0000:02:00.0
+Total memory: 4.63GiB
+Free memory: 4.56GiB
+2018-06-29 15:43:27.195298: W tensorflow/stream_executor/cuda/cuda_driver.cc:523] A non-primary context 0x3cd9330 exists before initializing the StreamExecutor. We haven't verified StreamExecutor works with that.
+2018-06-29 15:43:27.196041: I tensorflow/core/common_runtime/gpu/gpu_device.cc:955] Found device 1 with properties: 
+name: Tesla K20m
+major: 3 minor: 5 memoryClockRate (GHz) 0.7055
+pciBusID 0000:03:00.0
+Total memory: 4.63GiB
+Free memory: 4.56GiB
+2018-06-29 15:43:27.196304: I tensorflow/core/common_runtime/gpu/gpu_device.cc:976] DMA: 0 1 
+2018-06-29 15:43:27.196320: I tensorflow/core/common_runtime/gpu/gpu_device.cc:986] 0:   Y Y 
+2018-06-29 15:43:27.196327: I tensorflow/core/common_runtime/gpu/gpu_device.cc:986] 1:   Y Y 
+2018-06-29 15:43:27.196342: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1045] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K20m, pci bus id: 0000:02:00.0)
+2018-06-29 15:43:27.196350: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1045] Creating TensorFlow device (/gpu:1) -> (device: 1, name: Tesla K20m, pci bus id: 0000:03:00.0)
