@@ -1,2 +1,5 @@
 .DS_Store
 data/
+__pycache__/
+ALL-RESULTS/
+JOBS/

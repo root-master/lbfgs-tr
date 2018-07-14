@@ -1,5 +1,0 @@
-/act/sge/default/spool/mrcdg01/job_scripts/285229: line 16: activate: No such file or directory
-  File "LBFGS_TR.py", line 255
-    rhs = old_f + c1 * alpha * p @ g
-                                 ^
-SyntaxError: invalid syntax
